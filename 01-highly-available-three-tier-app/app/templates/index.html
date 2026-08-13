@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudX Service Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="page">
+
+    <header class="topbar">
+        <div>
+            <h1>CloudX</h1>
+            <p>Service Request Tracker</p>
+        </div>
+        <span class="badge">Cloud Operations Demo</span>
+    </header>
+
+    <section class="card add-card">
+        <div>
+            <h2>Create Service Request</h2>
+            <p>Add a customer request to the database.</p>
+        </div>
+
+        <form action="{{ url_for('add_request') }}" method="POST" class="add-form">
+            <input
+                type="text"
+                name="customer_name"
+                placeholder="Customer name"
+                required
+            >
+
+            <select name="service" required>
+                <option value="">Select service</option>
+                <option>Cloud Consulting</option>
+                <option>Application Modernization</option>
+                <option>AI Adoption</option>
+                <option>DevOps</option>
+            </select>
+
+            <button type="submit">Add Request</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <div class="section-title">
+            <div>
+                <h2>Service Requests</h2>
+                <p>Records currently stored in the database.</p>
+            </div>
+            <strong>{{ requests|length }} records</strong>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for item in requests %}
+                    <tr>
+                        <td>#{{ item["id"] }}</td>
+                        <td>{{ item["customer_name"] }}</td>
+                        <td>{{ item["service"] }}</td>
+                        <td>
+                            <span class="status status-{{ item['status']|lower|replace(' ', '-') }}">
+                                {{ item["status"] }}
+                            </span>
+                        </td>
+                        <td>{{ item["created_at"] }}</td>
+                        <td class="actions">
+                            <form action="{{ url_for('update_request', request_id=item['id']) }}" method="POST">
+                                <select name="status" onchange="this.form.submit()">
+                                    <option value="Open" {% if item["status"] == "Open" %}selected{% endif %}>Open</option>
+                                    <option value="In Progress" {% if item["status"] == "In Progress" %}selected{% endif %}>In Progress</option>
+                                    <option value="Completed" {% if item["status"] == "Completed" %}selected{% endif %}>Completed</option>
+                                </select>
+                            </form>
+
+                            <form
+                                action="{{ url_for('delete_request', request_id=item['id']) }}"
+                                method="POST"
+                                onsubmit="return confirm('Delete this request?');"
+                            >
+                                <button class="delete-btn" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="empty">
+                            No service requests yet. Add the first one above.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+</body>
+</html>
